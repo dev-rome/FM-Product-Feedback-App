@@ -1,26 +1,38 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@theme {
+  /* Purple shades */
+  --color-purple-500: hsl(282, 83%, 52%);
+  --color-purple-900: hsl(231, 33%, 34%);
+  --color-purple-50: hsl(231, 100%, 97%);
+  /* Blue shades */
+  --color-blue-500: hsl(230, 76%, 59%);
+  --color-blue-900: hsl(230, 31%, 31%);
+  --color-blue-50: hsl(230, 60%, 98%);
+  --color-blue-700: hsl(224, 20%, 49%);
+  --color-cyan-500: hsl(204, 94%, 68%);
+  /* Orange shades */
+  --color-orange-500: hsl(14, 83%, 74%);
+  /* Neutral */
+  --color-white: hsl(0, 0%, 100%);
+  /* Font */
+  --font-jost: var(--font-jost), sans-serif;
+  /* Font weight */
+  --font-weight-regular: 400;
+  --font-weight-medium: 600;
+  --font-weight-bold: 700;
+  /* Text */
+  --text-24: 1.5rem;
+  --text-20: 1.25rem;
+  --text-18: 1.125rem;
+  --text-16: 1rem;
+  --text-15: 0.9375rem;
+  --text-14: 0.875rem;
+  --text-13: 0.8125rem;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-blue-50);
+  color: var(--color-blue-700);
+  font-family: var(--font-jost);
 }
