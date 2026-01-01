@@ -5,10 +5,168 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../app/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  username      String?   @unique
+
+  accounts Account[]
+  sessions Session[]
+
+  feedbacks Feedback[]
+  comments  Comment[]
+
+  repliesAuthored Reply[] @relation("ReplyAuthor")
+  repliesReceived Reply[] @relation("ReplyingToUser")
+
+  upvotes Upvote[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id                String @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+
+  refresh_token String?
+  access_token  String?
+  expires_at    Int?
+  token_type    String?
+  scope         String?
+  id_token      String?
+  session_state String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+/**
+ * =========================
+ * Product Feedback App
+ * =========================
+ */
+
+enum FeedbackStatus {
+  suggestion
+  planned
+  in_progress
+  live
+}
+
+enum FeedbackCategory {
+  ui
+  ux
+  enhancement
+  bug
+  feature
+}
+
+model Feedback {
+  // Matches JSON: productRequests[].id (1..12)
+  id          Int              @id
+  title       String
+  description String
+  category    FeedbackCategory
+  status      FeedbackStatus   @default(suggestion)
+
+  authorId String?
+  author   User?   @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  comments Comment[]
+  upvotes  Upvote[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([category])
+}
+
+model Upvote {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  feedbackId Int
+  feedback   Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  // Enforces: one upvote per user per feedback
+  @@unique([userId, feedbackId])
+  @@index([feedbackId])
+}
+
+model Comment {
+  // Matches JSON comments[].id
+  id      Int    @id
+  content String
+
+  feedbackId Int
+  feedback   Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  replies Reply[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([feedbackId])
+}
+
+model Reply {
+  id      String @id @default(cuid())
+  content String
+
+  commentId Int
+  comment   Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  authorId String
+  author   User   @relation("ReplyAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  replyingToUserId String?
+  replyingToUser   User?   @relation("ReplyingToUser", fields: [replyingToUserId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([commentId])
 }
